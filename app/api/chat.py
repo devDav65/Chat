@@ -78,7 +78,6 @@ async def chat_endpoint(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Vérifier que la session appartient à l'utilisateur
     session = await get_session(db, request.session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=404, detail="Session introuvable")
@@ -91,6 +90,19 @@ async def chat_endpoint(
             request.message
         )
         return ChatResponse(response=response_text)
+
+    except RuntimeError as e:
+        # Erreur métier connue (quota, etc.) → 503 avec message lisible
+        raise HTTPException(status_code=503, detail=str(e))
+
     except Exception as e:
-        print(f"ERREUR DETECTEE : {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        err_str = str(e)
+        print(f"ERREUR CHAT : {err_str}")
+
+        if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+            raise HTTPException(
+                status_code=503,
+                detail="Le service IA est temporairement indisponible. Veuillez réessayer dans quelques instants."
+            )
+
+        raise HTTPException(status_code=500, detail="Erreur interne du serveur.")

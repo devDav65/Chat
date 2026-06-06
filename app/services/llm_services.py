@@ -7,6 +7,9 @@ import asyncio
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
+# Modèle avec quota généreux : 1500 req/jour sur free tier
+GEMINI_MODEL = "gemini-1.5-flash"
+
 
 async def generate_response(db: AsyncSession, user_id: int, session_id: int, user_message: str) -> str:
     try:
@@ -14,7 +17,6 @@ async def generate_response(db: AsyncSession, user_id: int, session_id: int, use
 
         conversation = await get_conversation(db, session_id)
 
-        # Construire l'historique (sans le dernier message)
         history = []
         for msg in conversation[:-1]:
             role = "user" if msg.role == "user" else "model"
@@ -26,11 +28,12 @@ async def generate_response(db: AsyncSession, user_id: int, session_id: int, use
             )
 
         chat = client.chats.create(
-            model=settings.GEMINI_MODEL,
+            model=GEMINI_MODEL,
             history=history
         )
 
-        # Retry automatique en cas de 503
+        # Retry sur 503 (surcharge) ET 429 (quota dépassé)
+        last_error = None
         for attempt in range(3):
             try:
                 response = chat.send_message(
@@ -41,18 +44,47 @@ async def generate_response(db: AsyncSession, user_id: int, session_id: int, use
                         top_p=0.9,
                     )
                 )
+                last_error = None
                 break
             except Exception as e:
-                if "503" in str(e) and attempt < 2:
+                last_error = e
+                err_str = str(e)
+
+                if "503" in err_str and attempt < 2:
                     print(f"Gemini surchargé, tentative {attempt + 1}/3...")
                     await asyncio.sleep(2 ** attempt)
+
+                elif "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    # Extraire le délai suggéré par l'API si présent
+                    wait = 45
+                    try:
+                        import re
+                        match = re.search(r'retry.*?(\d+)s', err_str, re.IGNORECASE)
+                        if match:
+                            wait = int(match.group(1)) + 2
+                    except Exception:
+                        pass
+
+                    if attempt < 2:
+                        print(f"Quota Gemini dépassé, attente {wait}s (tentative {attempt + 1}/3)...")
+                        await asyncio.sleep(wait)
+                    else:
+                        raise RuntimeError(
+                            "Le service IA est temporairement indisponible (quota dépassé). "
+                            "Veuillez réessayer dans quelques instants."
+                        )
                 else:
                     raise
+
+        if last_error:
+            raise last_error
 
         response_text = response.text.strip()
         await add_message(db, user_id, session_id, "assistant", response_text)
         return response_text
 
+    except RuntimeError:
+        raise
     except Exception as e:
         print(f"Erreur Gemini API: {e}")
         raise
