@@ -1,4 +1,3 @@
-
 # 🤖 Chatbot Gemini avec FastAPI
 
 Un chatbot intelligent propulsé par Google Gemini AI avec une API REST construite avec FastAPI et une interface web moderne.
@@ -96,10 +95,10 @@ GEMINI_MODEL=gemini-2.5-flash
 
 ### Fichier `.env`
 
-| Variable | Description | Valeur par défaut |
-|----------|-------------|-------------------|
-| `GEMINI_API_KEY` | Clé API Google Gemini | *Obligatoire* |
-| `GEMINI_MODEL` | Modèle Gemini à utiliser | `gemini-2.5-flash` |
+| Variable         | Description              | Valeur par défaut  |
+| ---------------- | ------------------------ | ------------------ |
+| `GEMINI_API_KEY` | Clé API Google Gemini    | _Obligatoire_      |
+| `GEMINI_MODEL`   | Modèle Gemini à utiliser | `gemini-2.5-flash` |
 
 ### Modèles disponibles
 
@@ -140,6 +139,7 @@ curl -X POST "http://localhost:8000/api/chat" \
 Envoie un message au chatbot et reçoit une réponse.
 
 **Request Body :**
+
 ```json
 {
   "message": "Votre message ici"
@@ -147,6 +147,7 @@ Envoie un message au chatbot et reçoit une réponse.
 ```
 
 **Response :**
+
 ```json
 {
   "response": "Réponse du chatbot"
@@ -154,6 +155,7 @@ Envoie un message au chatbot et reçoit une réponse.
 ```
 
 **Exemple avec Python :**
+
 ```python
 import requests
 
@@ -166,18 +168,19 @@ print(response.json()["response"])
 ```
 
 **Exemple avec JavaScript :**
+
 ```javascript
-fetch('http://localhost:8000/api/chat', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        message: 'Bonjour !'
-    })
+fetch("http://localhost:8000/api/chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    message: "Bonjour !",
+  }),
 })
-.then(response => response.json())
-.then(data => console.log(data.response));
+  .then((response) => response.json())
+  .then((data) => console.log(data.response));
 ```
 
 #### GET `/`
@@ -185,6 +188,7 @@ fetch('http://localhost:8000/api/chat', {
 Page d'accueil de l'API.
 
 **Response :**
+
 ```json
 {
   "message": "Chatbot API is running"
@@ -226,17 +230,20 @@ chatbot-gemini-fastapi/
 ## 🛠️ Technologies utilisées
 
 ### Backend
+
 - **[FastAPI](https://fastapi.tiangolo.com/)** - Framework web moderne et rapide
 - **[Uvicorn](https://www.uvicorn.org/)** - Serveur ASGI haute performance
 - **[Pydantic](https://pydantic-docs.helpmanual.io/)** - Validation des données
 - **[Google Generative AI](https://ai.google.dev/)** - API Gemini
 
 ### Frontend
+
 - **[Bootstrap 5](https://getbootstrap.com/)** - Framework CSS
 - **[Bootstrap Icons](https://icons.getbootstrap.com/)** - Icônes
 - **Vanilla JavaScript** - Pas de framework JS
 
 ### Outils
+
 - **[Python-dotenv](https://github.com/theskumar/python-dotenv)** - Gestion des variables d'environnement
 
 ## 🔧 Développement
@@ -330,6 +337,7 @@ docker run -p 8000:8000 --env-file .env chatbot-gemini
 ### Changer le modèle Gemini
 
 Dans `.env` :
+
 ```env
 GEMINI_MODEL=gemini-2.5-pro  # Modèle plus puissant
 ```
@@ -337,6 +345,7 @@ GEMINI_MODEL=gemini-2.5-pro  # Modèle plus puissant
 ### Modifier les paramètres de génération
 
 Dans `app/services/llm_services.py` :
+
 ```python
 generation_config=genai.types.GenerationConfig(
     max_output_tokens=2000,    # Longueur max de la réponse
@@ -348,6 +357,7 @@ generation_config=genai.types.GenerationConfig(
 ### Personnaliser l'interface
 
 Modifiez `frontend.html` :
+
 - Couleurs : Changez le gradient dans le CSS
 - Texte : Modifiez le titre et le message de bienvenue
 - Icônes : Utilisez d'autres icônes de Bootstrap Icons
@@ -410,4 +420,3 @@ Si ce projet vous a aidé, n'hésitez pas à lui donner une étoile ⭐
 ---
 
 **Fait avec ❤️ et Python**
-# Chat
