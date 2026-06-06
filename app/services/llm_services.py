@@ -8,7 +8,7 @@ import asyncio
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 # Modèle avec quota généreux : 1500 req/jour sur free tier
-GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_MODEL = settings.GEMINI_MODEL
 
 
 async def generate_response(db: AsyncSession, user_id: int, session_id: int, user_message: str) -> str:
