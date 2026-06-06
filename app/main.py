@@ -23,3 +23,7 @@ app.include_router(chat.router)
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Chatbot API"}
+
+@app.get("/health")
+def health():
+    return {"status":"running"}
